@@ -69,8 +69,8 @@ export const knownOrigins = [
 // ─── JEEPNEY NETWORK ─────────────────────────────────────────────────────────
 export const jeepneyNetwork: JeepneyRoute[] = [
   {
-    code: '02B',
-    name: 'Jaro – City Proper – La Paz',
+    code: 'Jaro – La Paz',
+    name: 'Jaro · City Proper · La Paz',
     color: '#C41E3A',
     fare: { base: 13, max: 25 },
     frequency: 'Every 5–10 min',
@@ -110,8 +110,8 @@ export const jeepneyNetwork: JeepneyRoute[] = [
     ],
   },
   {
-    code: '03C',
-    name: 'Mandurriao – Downtown – Molo',
+    code: 'Mandurriao – Molo',
+    name: 'Mandurriao · Downtown · Molo',
     color: '#1B4F8A',
     fare: { base: 13, max: 30 },
     frequency: 'Every 10–15 min',
@@ -146,8 +146,8 @@ export const jeepneyNetwork: JeepneyRoute[] = [
     ],
   },
   {
-    code: '04A',
-    name: 'Diversion Road Loop',
+    code: 'Diversion Road',
+    name: 'Diversion Rd · SM · IBP Loop',
     color: '#D4A017',
     fare: { base: 13, max: 28 },
     frequency: 'Every 15 min',
@@ -186,8 +186,8 @@ export const jeepneyNetwork: JeepneyRoute[] = [
     ],
   },
   {
-    code: '08',
-    name: 'Downtown – Esplanade – Wharf',
+    code: 'Esplanade – Wharf',
+    name: 'Downtown · Esplanade · Ortiz Wharf',
     color: '#6B4423',
     fare: { base: 13, max: 20 },
     frequency: 'Every 10 min',
@@ -215,8 +215,8 @@ export const jeepneyNetwork: JeepneyRoute[] = [
     ],
   },
   {
-    code: '11',
-    name: 'Pavia – Arevalo Heritage',
+    code: 'Pavia – Arevalo',
+    name: 'Pavia · La Paz · Molo · Arevalo',
     color: '#2D6A4F',
     fare: { base: 13, max: 35 },
     frequency: 'Every 20 min',
@@ -239,8 +239,8 @@ export const jeepneyNetwork: JeepneyRoute[] = [
     ],
   },
   {
-    code: 'SA',
-    name: 'Special Airport Route',
+    code: 'Airport Special',
+    name: 'City Proper · SM · Iloilo Airport',
     color: '#8B1A1A',
     fare: { base: 30, max: 50 },
     frequency: 'Every 30 min',

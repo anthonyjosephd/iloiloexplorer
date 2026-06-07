@@ -146,8 +146,8 @@ export default function JeepneyPage() {
     },
     {
       icon: '👋',
-      title: `Hail Route ${selectedRec.route.code}`,
-      desc: `Look for a jeepney with "${selectedRec.route.code}" on the front windshield. Wave your hand to signal it to stop. They run ${selectedRec.route.frequency}.`,
+      title: `Hail the "${selectedRec.route.code}" jeepney`,
+      desc: `Look for a jeepney with "${selectedRec.route.code}" displayed on the front windshield or side. Wave your hand to signal it to stop. They run ${selectedRec.route.frequency}.`,
     },
     {
       icon: '🗣️',
@@ -413,7 +413,9 @@ export default function JeepneyPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
               {nearbyRoutes.slice(0, 6).map((nr, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', background: 'var(--color-cream)', borderRadius: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: nr.route.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', color: 'white', flexShrink: 0 }}>{nr.route.code}</div>
+                  <div style={{ width: '56px', height: '40px', borderRadius: '10px', background: nr.route.color, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px 6px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '9px', fontWeight: '800', color: 'white', lineHeight: 1.2, textAlign: 'center' }}>{nr.route.code}</span>
+                  </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '13px', fontWeight: '600', color: '#1A1209', marginBottom: '2px' }}>{nr.route.name}</div>
                     <div style={{ fontSize: '11px', color: 'rgba(26,18,9,0.5)', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -492,8 +494,8 @@ export default function JeepneyPage() {
                       >
                         {/* Top bar */}
                         <div style={{ background: isSelected ? rec.route.color : `${rec.route.color}10`, padding: '13px 18px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                          <div style={{ background: isSelected ? 'rgba(255,255,255,0.25)' : rec.route.color, borderRadius: '9px', padding: '6px 13px', flexShrink: 0 }}>
-                            <div style={{ fontSize: '18px', fontWeight: '800', fontFamily: 'Playfair Display, serif', color: 'white', lineHeight: 1 }}>{rec.route.code}</div>
+                          <div style={{ background: isSelected ? 'rgba(255,255,255,0.25)' : rec.route.color, borderRadius: '9px', padding: '6px 13px', flexShrink: 0, maxWidth: '160px' }}>
+                            <div style={{ fontSize: '12px', fontWeight: '800', color: 'white', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{rec.route.code}</div>
                           </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontSize: '14px', fontWeight: '700', color: isSelected ? 'white' : '#1A1209', marginBottom: '2px' }}>{rec.route.name}</div>
@@ -586,7 +588,9 @@ export default function JeepneyPage() {
             {showRiding && selectedRec && (
               <div style={{ background: 'white', borderRadius: '20px', padding: '26px', boxShadow: '0 8px 32px rgba(26,18,9,0.1)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                  <div style={{ width: '34px', height: '34px', background: selectedRec.route.color, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: '800', color: 'white', flexShrink: 0 }}>{selectedRec.route.code}</div>
+                  <div style={{ width: '34px', height: '34px', background: selectedRec.route.color, borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '0 6px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: '800', color: 'white', lineHeight: 1.2, textAlign: 'center', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{selectedRec.route.code}</span>
+                  </div>
                   <h2 style={{ fontFamily: 'Playfair Display, serif', fontSize: '20px', color: '#1A1209', margin: 0 }}>Riding Guide</h2>
                 </div>
                 <p style={{ fontSize: '12px', color: 'rgba(26,18,9,0.45)', marginBottom: '24px' }}>
