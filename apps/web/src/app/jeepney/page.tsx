@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Bus, MapPin, ArrowRight, RotateCcw, Clock, DollarSign, ChevronRight, Star, Navigation, Zap } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Bus, MapPin, ArrowRight, RotateCcw, Clock, DollarSign, ChevronRight, Star, Navigation, Zap, Search, X } from 'lucide-react'
 
 type Step = 'start' | 'purpose' | 'destination' | 'route' | 'riding'
 
@@ -329,6 +329,24 @@ const destinations: Record<string, Destination[]> = {
   ],
 }
 
+const allDestinations: (Destination & { purpose: string })[] = Object.entries(destinations).flatMap(
+  ([purpose, dests]) => dests.map(d => ({ ...d, purpose }))
+)
+
+function searchDestinations(query: string): (Destination & { purpose: string })[] {
+  if (!query.trim()) return []
+  const q = query.toLowerCase()
+  return allDestinations.filter(d =>
+    d.name.toLowerCase().includes(q) ||
+    d.district.toLowerCase().includes(q) ||
+    d.tags.some(t => t.toLowerCase().includes(q)) ||
+    d.route.boardAt.toLowerCase().includes(q) ||
+    d.route.alightAt.toLowerCase().includes(q) ||
+    d.route.landmarks.some(l => l.toLowerCase().includes(q)) ||
+    purposes.find(p => p.id === d.purpose)?.label.toLowerCase().includes(q)
+  )
+}
+
 const difficultyConfig = {
   easy: { label: 'Easy ride', color: '#2D6A4F', bg: 'rgba(45,106,79,0.1)' },
   moderate: { label: 'Moderate', color: '#B8860B', bg: 'rgba(212,160,23,0.12)' },
@@ -340,13 +358,37 @@ export default function JeepneyPage() {
   const [selectedPurpose, setSelectedPurpose] = useState<string | null>(null)
   const [selectedDest, setSelectedDest] = useState<Destination | null>(null)
   const [ridingStep, setRidingStep] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchFocused, setSearchFocused] = useState(false)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const searchResults = searchDestinations(searchQuery)
 
   const reset = () => {
     setStep('start')
     setSelectedPurpose(null)
     setSelectedDest(null)
     setRidingStep(0)
+    setSearchQuery('')
+    setSearchFocused(false)
   }
+
+  const selectFromSearch = (dest: Destination & { purpose: string }) => {
+    setSelectedPurpose(dest.purpose)
+    setSelectedDest(dest)
+    setSearchQuery('')
+    setSearchFocused(false)
+    setStep('route')
+  }
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.closest('.search-container')?.contains(e.target as Node)) {
+        setSearchFocused(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   const ridingSteps = selectedDest ? [
     { icon: '👣', title: 'Walk to the stop', desc: `Head to ${selectedDest.route.boardAt}. Stand on the right side of the road facing your direction of travel.` },
@@ -390,6 +432,111 @@ export default function JeepneyPage() {
               }}>
                 <RotateCcw size={14} /> Start over
               </button>
+            )}
+          </div>
+
+          {/* Search bar */}
+          <div className="search-container" style={{ position: 'relative', marginTop: '28px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              background: searchFocused ? 'white' : 'rgba(255,255,255,0.92)',
+              borderRadius: searchFocused && (searchResults.length > 0 || searchQuery === '') ? '16px 16px 0 0' : '16px',
+              padding: '0 18px',
+              boxShadow: searchFocused ? '0 0 0 3px rgba(212,160,23,0.4)' : '0 4px 24px rgba(0,0,0,0.2)',
+              transition: 'all 0.2s',
+            }}>
+              <Search size={18} color={searchFocused ? '#1B4F8A' : 'rgba(26,18,9,0.4)'} style={{ flexShrink: 0, transition: 'color 0.2s' }} />
+              <input
+                ref={searchRef}
+                type="text"
+                placeholder="Search any place in Iloilo… (e.g. Molo Church, batchoy, airport)"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                style={{
+                  flex: 1, border: 'none', outline: 'none', background: 'transparent',
+                  fontSize: '15px', color: 'var(--color-dark)', padding: '16px 0',
+                  fontFamily: 'DM Sans, sans-serif',
+                }}
+              />
+              {searchQuery && (
+                <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: 'rgba(26,18,9,0.4)' }}>
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown: results */}
+            {searchFocused && searchQuery && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0, background: 'white',
+                borderRadius: '0 0 16px 16px', boxShadow: '0 16px 40px rgba(0,0,0,0.15)',
+                zIndex: 100, overflow: 'hidden', border: '1px solid rgba(26,18,9,0.06)', borderTop: 'none',
+              }}>
+                {searchResults.length === 0 ? (
+                  <div style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <MapPin size={18} color="rgba(26,18,9,0.25)" />
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: '500', color: 'rgba(26,18,9,0.5)' }}>No results for &ldquo;{searchQuery}&rdquo;</div>
+                      <div style={{ fontSize: '12px', color: 'rgba(26,18,9,0.35)', marginTop: '2px' }}>Try: Molo, batchoy, SM City, airport…</div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ padding: '10px 18px 6px', fontSize: '11px', fontWeight: '600', color: 'rgba(26,18,9,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                    </div>
+                    {searchResults.map((dest, i) => {
+                      const diff = difficultyConfig[dest.route.difficulty]
+                      const purposeInfo = purposes.find(p => p.id === dest.purpose)
+                      return (
+                        <button key={dest.id} onClick={() => selectFromSearch(dest)}
+                          style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 18px', textAlign: 'left', borderTop: i === 0 ? 'none' : '1px solid rgba(26,18,9,0.05)', transition: 'background 0.15s' }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(27,79,138,0.04)'}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'none'}
+                        >
+                          <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: `${dest.route.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', flexShrink: 0 }}>
+                            {dest.emoji}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--color-dark)' }}>{dest.name}</span>
+                              <span style={{ fontSize: '10px', padding: '2px 7px', borderRadius: '100px', background: `${dest.route.color}18`, color: dest.route.color, fontWeight: '600' }}>Route {dest.route.code}</span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'rgba(26,18,9,0.5)', marginTop: '3px', display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><MapPin size={10} /> {dest.district}</span>
+                              <span>·</span><span>{dest.route.fare}</span>
+                              <span>·</span><span>{dest.route.duration}</span>
+                              <span style={{ padding: '1px 7px', borderRadius: '100px', background: diff.bg, color: diff.color, fontWeight: '600', fontSize: '10px' }}>{diff.label}</span>
+                              {purposeInfo && <span style={{ color: 'rgba(26,18,9,0.35)' }}>· {purposeInfo.emoji} {purposeInfo.label}</span>}
+                            </div>
+                          </div>
+                          <ArrowRight size={14} color="rgba(26,18,9,0.2)" style={{ flexShrink: 0 }} />
+                        </button>
+                      )
+                    })}
+                    <div style={{ padding: '10px 18px', borderTop: '1px solid rgba(26,18,9,0.06)', background: 'rgba(27,79,138,0.03)' }}>
+                      <button onClick={() => { setSearchQuery(''); setSearchFocused(false); setStep('purpose') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: '#1B4F8A', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Bus size={12} /> Browse all destinations by category →
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Dropdown: quick suggestions when empty */}
+            {searchFocused && !searchQuery && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'white', borderRadius: '0 0 16px 16px', boxShadow: '0 16px 40px rgba(0,0,0,0.15)', zIndex: 100, padding: '14px 18px 16px', border: '1px solid rgba(26,18,9,0.06)', borderTop: 'none' }}>
+                <div style={{ fontSize: '11px', fontWeight: '600', color: 'rgba(26,18,9,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Popular destinations</div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {['Molo Church', 'Batchoy', 'SM City', 'Airport', 'Guimaras', 'Esplanade', 'Jaro Cathedral', 'Antiques'].map(s => (
+                    <button key={s} onClick={() => setSearchQuery(s)} style={{ background: 'var(--color-cream)', border: '1px solid rgba(26,18,9,0.08)', borderRadius: '100px', padding: '6px 14px', fontSize: '13px', color: 'var(--color-dark)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <Search size={11} color="rgba(26,18,9,0.4)" />{s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
